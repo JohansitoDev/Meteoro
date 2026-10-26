@@ -1,0 +1,42 @@
+[package]
+name = "meteoro"
+version = "0.0.1"
+edition = "2021"
+description = "Native-first mobile framework and development preview"
+default-run = "meteoro"
+include = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "README.md",
+    "app.mtr",
+    "assets/**",
+    "docs/**",
+    "scripts/**",
+    "src/**",
+    "web/**",
+    "meteoro-go/.env.example",
+    "meteoro-go/app/build.gradle.kts",
+    "meteoro-go/app/proguard-rules.pro",
+    "meteoro-go/app/src/**",
+    "meteoro-go/build.gradle.kts",
+    "meteoro-go/gradle.properties",
+    "meteoro-go/gradle/**",
+    "meteoro-go/settings.gradle.kts",
+]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+qrcode = { version = "0.14", default-features = false }
+
+[lib]
+name = "meteoro"
+path = "src/lib.rs"
+
+[[bin]]
+name = "meteoro-cli"
+path = "src/main.rs"
+
+[[bin]]
+name = "meteoro"
+path = "src/bin/meteoro.rs"

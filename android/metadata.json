@@ -1,0 +1,6 @@
+{
+  "name": "Meteoro Go",
+  "description": "Native Android companion app for live-rendering Meteoro dynamic UI schemas with QR code scanning and instant live reload.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

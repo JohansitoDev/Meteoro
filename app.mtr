@@ -1,0 +1,25 @@
+screen "inicio" "Inicio"
+text "Bienvenido a tu nueva app Meteoro"
+card "Tu primer proyecto"
+text "Elige una idea y empieza a crear."
+end
+card "Diseño nativo"
+text "Tu interfaz se renderiza de forma nativa."
+end
+card "Actualizacion en vivo"
+text "Mira tus cambios al instante mientras desarrollas."
+end
+
+screen "proyectos" "Proyectos"
+card "Mis proyectos"
+text "Tus proyectos apareceran aqui."
+end
+
+screen "perfil" "Perfil"
+card "Tu perfil"
+input "nombre" "Escribe tu nombre"
+end
+
+tab "inicio" "Inicio"
+tab "proyectos" "Proyectos"
+tab "perfil" "Perfil"

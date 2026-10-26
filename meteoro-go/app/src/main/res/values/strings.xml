@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Meteoro Go</string>
+    <string name="tagline">The Native Companion</string>
+    <string name="scan_qr">Escanear QR</string>
+    <string name="paste_url_placeholder">meteoro://... o https://api.meteoro.dev/app/...</string>
+    <string name="open_app">Abrir App</string>
+    <string name="recent_apps">Apps Recientes</string>
+    <string name="live_reload_active">Live Reload Activo (2s)</string>
+    <string name="camera_permission_required">Se requiere permiso de cámara para escanear el código QR</string>
+    <string name="grant_permission">Conceder Permiso</string>
+</resources>

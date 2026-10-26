@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meteoro Web Preview</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, sans-serif; background: #f5f5f5; color: #0a1931; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+    header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 1rem; padding: .8rem max(1rem, calc((100vw - 760px) / 2)); background: #fff; border-bottom: 1px solid #cbd5e1; }
+    header button { width: auto; margin: 0; padding: .45rem .8rem; }
+    header h1 { flex: 1; margin: 0; font-size: 1.15rem; }
+    header img { width: 2.25rem; height: 2.25rem; object-fit: contain; background: #fff; border-radius: .5rem; }
+    #status { color: #73e0a1; font-size: .8rem; white-space: nowrap; }
+    main { width: min(100% - 2rem, 720px); margin: 2rem auto; }
+    #version { margin-bottom: 1rem; color: #9eacc3; font-size: .85rem; }
+    .component { margin: .75rem 0; }
+    .text { white-space: pre-wrap; }
+    button { width: 100%; padding: .8rem 1rem; border: 0; border-radius: .75rem; background: #ff6b35; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+    button:hover { filter: brightness(1.08); }
+    .card { padding: 1rem; border: 1px solid #cbd5e1; border-radius: 1rem; background: #fff; }
+    .card-title { margin: 0 0 .75rem; font-weight: 700; }
+    .stack { display: flex; gap: .5rem; }
+    .stack.vertical { flex-direction: column; }
+    .stack.horizontal { flex-direction: row; align-items: flex-start; }
+    .stack.list-vertical { max-height: 20rem; overflow-y: auto; }
+    .stack.list-horizontal { overflow-x: auto; }
+    .stack.list-horizontal > .component { flex: 0 0 min(80vw, 18rem); }
+    .image img { display: block; width: 100%; height: 180px; border-radius: .75rem; object-fit: cover; }
+    input { width: 100%; padding: .8rem; border: 1px solid #94a3b8; border-radius: .65rem; background: #fff; color: inherit; font: inherit; }
+    #error { color: #ff9b86; }
+    #navigation { position: fixed; inset: auto 0 0; display: flex; justify-content: center; gap: .5rem; padding: .65rem 1rem calc(.65rem + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #cbd5e1; }
+    #navigation[hidden] { display: none; }
+    #navigation button { width: auto; min-width: 6rem; padding: .55rem .9rem; background: transparent; color: #475569; }
+    #navigation button[aria-current="page"] { background: #e8edf3; color: #0a1931; }
+    body:has(#navigation:not([hidden])) main { padding-bottom: 5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/meteoro-logo.png" alt="Logo de Meteoro">
+    <button id="back" type="button" hidden aria-label="Volver">Volver</button>
+    <h1 id="app-name">Meteoro</h1>
+    <span id="status">Conectando…</span>
+  </header>
+  <main>
+    <div id="version"></div>
+    <div id="error" role="status"></div>
+    <section id="screen"></section>
+  </main>
+  <nav id="navigation" aria-label="Navegacion principal" hidden></nav>
+  <script>
+    const screenElement = document.querySelector("#screen");
+    const routeStack = [];
+    const inputValues = new Map();
+    let app = null;
+    let lastJson = "";
+
+    function currentRoute() {
+      return routeStack.at(-1) || app?.initialRoute || null;
+    }
+
+    function navigate(routeId) {
+      if (!app?.routes?.some(route => route.id === routeId)) return;
+      routeStack.push(routeId);
+      history.pushState({ routeId }, "", `#${encodeURIComponent(routeId)}`);
+      render();
+    }
+
+    function selectTab(routeId) {
+      if (!app?.routes?.some(route => route.id === routeId)) return;
+      routeStack.splice(0, routeStack.length, routeId);
+      history.pushState({ routeId }, "", `#${encodeURIComponent(routeId)}`);
+      render();
+    }
+
+    function applyStyles(element, props = {}) {
+      if (props.color) element.style.color = props.color;
+      if (props.backgroundColor) element.style.backgroundColor = props.backgroundColor;
+      if (props.size != null) element.style.fontSize = `${props.size}px`;
+      if (props.padding != null) element.style.padding = `${props.padding}px`;
+      if (props.rounded != null) element.style.borderRadius = `${props.rounded}px`;
+      if (props.alignment) element.style.textAlign = props.alignment;
+      if (props.fontWeight) element.style.fontWeight = props.fontWeight;
+      if (props.spacing != null) element.style.gap = `${props.spacing}px`;
+    }
+
+    function renderComponent(component, index) {
+      const element = document.createElement("div");
+      element.className = `component ${component.type}`;
+      const id = component.id || `${component.type}-${index}`;
+      const props = component.props || {};
+
+      if (component.type === "text") {
+        element.textContent = component.value || "";
+        applyStyles(element, props);
+      } else if (component.type === "button") {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = component.value || "Acción";
+        applyStyles(button, props);
+        button.addEventListener("click", () => {
+          const action = props.action || "";
+          if (action.startsWith("navigate:")) navigate(action.slice("navigate:".length));
+        });
+        element.append(button);
+      } else if (component.type === "input") {
+        const input = document.createElement("input");
+        input.id = id;
+        input.name = id;
+        input.placeholder = props.placeholder || "";
+        input.value = inputValues.get(id) || component.value || "";
+        applyStyles(input, props);
+        input.addEventListener("input", () => inputValues.set(id, input.value));
+        element.append(input);
+      } else if (component.type === "card") {
+        element.className = "component card";
+        applyStyles(element, props);
+        if (component.value) {
+          const title = document.createElement("div");
+          title.className = "card-title";
+          title.textContent = component.value;
+          if (props.color) title.style.color = props.color;
+          if (props.size != null) title.style.fontSize = `${props.size}px`;
+          if (props.fontWeight) title.style.fontWeight = props.fontWeight;
+          element.append(title);
+        }
+        (props.children || []).forEach((child, childIndex) => {
+          element.append(renderComponent(child, childIndex));
+        });
+      } else if (component.type === "image") {
+        const image = document.createElement("img");
+        image.src = component.value || "";
+        image.alt = props.alt || "Imagen";
+        image.loading = "lazy";
+        if (props.size != null) image.style.height = `${props.size}px`;
+        if (props.rounded != null) image.style.borderRadius = `${props.rounded}px`;
+        element.append(image);
+      } else if (component.type === "stack") {
+        const direction = props.direction === "horizontal" ? "horizontal" : "vertical";
+        element.classList.add("stack", direction);
+        if (props.scrollable) element.classList.add(`list-${direction}`);
+        applyStyles(element, props);
+        (props.children || []).forEach((child, childIndex) => {
+          element.append(renderComponent(child, childIndex));
+        });
+      }
+      return element;
+    }
+
+    function render() {
+      if (!app) return;
+      const route = app.routes?.find(item => item.id === currentRoute());
+      document.querySelector("#app-name").textContent = route?.title || app.appName || "Meteoro App";
+      document.querySelector("#version").textContent = `v${app.version || "0.0.1"}`;
+      document.querySelector("#back").hidden = routeStack.length === 0;
+      const components = route?.components || app.screens || [];
+      screenElement.replaceChildren(...components.map(renderComponent));
+      const navigation = document.querySelector("#navigation");
+      const tabs = app.navigationBar || [];
+      navigation.hidden = tabs.length === 0;
+      navigation.replaceChildren(...tabs.map(tab => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = tab.label;
+        if (tab.route === currentRoute()) button.setAttribute("aria-current", "page");
+        button.addEventListener("click", () => selectTab(tab.route));
+        return button;
+      }));
+    }
+
+    document.querySelector("#back").addEventListener("click", () => history.back());
+    window.addEventListener("popstate", event => {
+      routeStack.splice(0, routeStack.length);
+      if (event.state?.routeId) routeStack.push(event.state.routeId);
+      render();
+    });
+
+    async function refresh() {
+      try {
+        const response = await fetch("/app/code", { cache: "no-store" });
+        if (!response.ok) throw new Error(`Servidor respondió ${response.status}`);
+        const json = await response.text();
+        if (json !== lastJson) {
+          const nextApp = JSON.parse(json);
+          if (app && !nextApp.routes?.some(route => route.id === currentRoute())) routeStack.length = 0;
+          app = nextApp;
+          lastJson = json;
+          render();
+        }
+        document.querySelector("#status").textContent = "En vivo";
+        document.querySelector("#error").textContent = "";
+      } catch (error) {
+        document.querySelector("#status").textContent = "Desconectado";
+        document.querySelector("#error").textContent = error.message;
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+</html>

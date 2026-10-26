@@ -1,0 +1,107 @@
+{
+  "appName": "Meteoro App",
+  "version": "0.0.1",
+  "screens": [],
+  "initialRoute": "inicio",
+  "routes": [
+    {
+      "id": "inicio",
+      "title": "Inicio",
+      "components": [
+        {
+          "type": "text",
+          "value": "Bienvenido a tu nueva app Meteoro"
+        },
+        {
+          "type": "card",
+          "value": "Tu primer proyecto",
+          "props": {
+            "children": [
+              {
+                "type": "text",
+                "value": "Elige una idea y empieza a crear."
+              }
+            ]
+          }
+        },
+        {
+          "type": "card",
+          "value": "Diseño nativo",
+          "props": {
+            "children": [
+              {
+                "type": "text",
+                "value": "Tu interfaz se renderiza de forma nativa."
+              }
+            ]
+          }
+        },
+        {
+          "type": "card",
+          "value": "Actualizacion en vivo",
+          "props": {
+            "children": [
+              {
+                "type": "text",
+                "value": "Mira tus cambios al instante mientras desarrollas."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "proyectos",
+      "title": "Proyectos",
+      "components": [
+        {
+          "type": "card",
+          "value": "Mis proyectos",
+          "props": {
+            "children": [
+              {
+                "type": "text",
+                "value": "Tus proyectos apareceran aqui."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "perfil",
+      "title": "Perfil",
+      "components": [
+        {
+          "type": "card",
+          "value": "Tu perfil",
+          "props": {
+            "children": [
+              {
+                "id": "nombre",
+                "type": "input",
+                "props": {
+                  "placeholder": "Escribe tu nombre"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "navigationBar": [
+    {
+      "route": "inicio",
+      "label": "Inicio"
+    },
+    {
+      "route": "proyectos",
+      "label": "Proyectos"
+    },
+    {
+      "route": "perfil",
+      "label": "Perfil"
+    }
+  ]
+}
